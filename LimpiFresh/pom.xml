@@ -52,7 +52,11 @@
 			<version>23.9.0.25.07</version>
 		</dependency>
 
-
+		<dependency>
+			<groupId>com.oracle.database.security</groupId>
+			<artifactId>oraclepki</artifactId>
+			<version>23.9.0.25.07</version>
+		</dependency>
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
 			<artifactId>ojdbc11</artifactId>
