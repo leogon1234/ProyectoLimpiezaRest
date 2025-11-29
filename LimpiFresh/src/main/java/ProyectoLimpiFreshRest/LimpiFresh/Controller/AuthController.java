@@ -72,4 +72,16 @@ public class AuthController {
                 })
                 .orElse(ResponseEntity.status(404).body("Usuario no registrado, debe crear una cuenta"));
     }
+
+    @PostMapping("/crear-admin")
+    public ResponseEntity<?> crearAdmin(
+            @org.springframework.web.bind.annotation.RequestBody Usuario usuario) {
+        try {
+            Usuario creado = usuarioService.registrarAdmin(usuario);
+            creado.setPassword(null); // no devolver password
+            return ResponseEntity.ok(creado);
+        } catch (RuntimeException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        }
+    }
 }

@@ -29,4 +29,14 @@ public class UsuarioService {
     public Optional<Usuario> buscarPorEmail(String email) {
         return usuarioRepository.findByEmail(email);
     }
+
+    public Usuario registrarAdmin(Usuario usuario) {
+        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
+            throw new RuntimeException("El correo ya está registrado");
+        }
+        Rol rolAdmin = rolRepository.findByNombreRol("ADMIN")
+                .orElseThrow(() -> new RuntimeException("Rol ADMIN no existe"));
+        usuario.setRol(rolAdmin);
+        return usuarioRepository.save(usuario);
+    }
 }
