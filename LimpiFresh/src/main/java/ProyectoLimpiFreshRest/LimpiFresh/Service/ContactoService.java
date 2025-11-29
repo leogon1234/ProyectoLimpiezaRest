@@ -4,6 +4,9 @@ import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Contacto;
 import ProyectoLimpiFreshRest.LimpiFresh.Repository.ContactoRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 public class ContactoService {
 
@@ -15,5 +18,13 @@ public class ContactoService {
 
     public Contacto guardarMensaje(Contacto contacto) {
         return contactoRepository.save(contacto);
+    }
+
+    public List<Contacto> listarTodos() {
+        return contactoRepository.findAll();
+    }
+
+    public Optional<Contacto> buscarPorId(int id) {
+        return contactoRepository.findById(id);
     }
 }

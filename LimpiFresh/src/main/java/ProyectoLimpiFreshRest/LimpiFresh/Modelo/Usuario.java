@@ -22,4 +22,17 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id")
     private Rol rol;
+
+    // Métodos explícitos para evitar problemas con Lombok en compilación
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setRol(Rol rol) {
+        this.rol = rol;
+    }
 }

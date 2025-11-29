@@ -24,5 +24,10 @@ public class Producto {
     private String img;
     private Integer stock;
     private Integer iva;
+
+    // Setter explícito para evitar problemas con Lombok al compilar
+    public void setId(Integer id) {
+        this.id = id;
+    }
 }
 
