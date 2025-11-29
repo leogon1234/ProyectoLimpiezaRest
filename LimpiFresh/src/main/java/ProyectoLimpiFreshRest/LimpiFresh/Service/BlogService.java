@@ -32,5 +32,3 @@ public class BlogService {
         blogRepository.deleteById(id);
     }
 }
-
-

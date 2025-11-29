@@ -27,4 +27,7 @@ public class ContactoService {
     public Optional<Contacto> buscarPorId(int id) {
         return contactoRepository.findById(id);
     }
+
+    public void eliminar(int id) {contactoRepository.deleteById(id);
+    }
 }

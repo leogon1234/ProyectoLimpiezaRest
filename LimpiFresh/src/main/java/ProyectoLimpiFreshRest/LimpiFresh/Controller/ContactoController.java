@@ -57,4 +57,13 @@ public class ContactoController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminarMensaje(@PathVariable int id) {
+        if (contactoService.buscarPorId(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        contactoService.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }
