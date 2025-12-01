@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Autenticación", description = "Registro y autenticación de usuarios")
 public class AuthController {
 
     private final UsuarioService usuarioService;
@@ -24,16 +25,28 @@ public class AuthController {
         this.usuarioRepository = usuarioRepository;
     }
 
-    @Operation(summary = "Registrar nuevo usuario (rol CLIENTE)")
+    @Operation(
+            summary = "Registrar nuevo usuario",
+            description = "Registra un nuevo usuario en el sistema con rol CLIENTE por defecto. " +
+                    "Requiere: nombre, email, password, rut (opcional), región y comuna. " +
+                    "El email debe ser único en el sistema."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario registrado correctamente",
-                    content = @Content(schema = @Schema(implementation = Usuario.class))),
-            @ApiResponse(responseCode = "400", description = "Error de validación o correo ya registrado")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Usuario registrado correctamente. Devuelve el usuario creado con su rol asignado.",
+                    content = @Content(schema = @Schema(implementation = Usuario.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Error de validación: email ya registrado o datos inválidos"
+            )
     })
     @PostMapping("/registro")
     public ResponseEntity<?> registrar(
             @RequestBody(
-                    description = "Datos del usuario a registrar. El rol CLIENTE se asigna automáticamente.",
+                    description = "Datos del usuario a registrar. Campos requeridos: nombre, email, password, region, comuna. " +
+                            "El campo 'rol' no es necesario, se asigna automáticamente como CLIENTE.",
                     required = true,
                     content = @Content(schema = @Schema(implementation = Usuario.class))
             )
@@ -46,17 +59,31 @@ public class AuthController {
         }
     }
 
-    @Operation(summary = "Iniciar sesión")
+    @Operation(
+            summary = "Iniciar sesión",
+            description = "Autentica un usuario mediante email y contraseña. " +
+                    "Si las credenciales son correctas, devuelve el objeto Usuario completo incluyendo su rol. " +
+                    "El frontend puede usar el rol para determinar permisos y mostrar opciones de administración."
+    )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Login correcto. Devuelve el usuario con su rol.",
-                    content = @Content(schema = @Schema(implementation = Usuario.class))),
-            @ApiResponse(responseCode = "401", description = "Contraseña incorrecta"),
-            @ApiResponse(responseCode = "404", description = "Usuario no registrado, debe crear una cuenta")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Login exitoso. Devuelve el usuario autenticado con su información completa y rol.",
+                    content = @Content(schema = @Schema(implementation = Usuario.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Contraseña incorrecta. El email existe pero la contraseña no coincide."
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Usuario no encontrado. El email no está registrado en el sistema."
+            )
     })
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestBody(
-                    description = "Credenciales de acceso (email y password).",
+                    description = "Credenciales de acceso. Solo se requieren los campos 'email' y 'password'.",
                     required = true,
                     content = @Content(schema = @Schema(implementation = Usuario.class))
             )
@@ -73,8 +100,30 @@ public class AuthController {
                 .orElse(ResponseEntity.status(404).body("Usuario no registrado, debe crear una cuenta"));
     }
 
+    @Operation(
+            summary = "Crear usuario administrador",
+            description = "Crea un nuevo usuario con rol ADMIN. " +
+                    "⚠️ Esta operación debería estar protegida y solo disponible para super administradores. " +
+                    "En producción, considera agregar autenticación y autorización."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Administrador creado exitosamente. La contraseña no se devuelve por seguridad.",
+                    content = @Content(schema = @Schema(implementation = Usuario.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Error al crear el administrador (email duplicado, datos inválidos)"
+            )
+    })
     @PostMapping("/crear-admin")
     public ResponseEntity<?> crearAdmin(
+            @RequestBody(
+                    description = "Datos del usuario administrador a crear",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = Usuario.class))
+            )
             @org.springframework.web.bind.annotation.RequestBody Usuario usuario) {
         try {
             Usuario creado = usuarioService.registrarAdmin(usuario);
