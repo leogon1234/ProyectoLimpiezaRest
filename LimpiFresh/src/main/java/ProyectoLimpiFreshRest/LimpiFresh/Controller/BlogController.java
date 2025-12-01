@@ -57,6 +57,7 @@ public class BlogController {
         if (blogService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+
         blog.setId(id);
         Blog actualizado = blogService.guardar(blog);
         return ResponseEntity.ok(actualizado);
@@ -72,9 +73,8 @@ public class BlogController {
         if (blogService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+
         blogService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 }
-
-
