@@ -14,7 +14,11 @@ public class config {
             @Override
             public void addCorsMappings(CorsRegistry registry){
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:5173")
+                        .allowedOrigins(
+                                "http://localhost:5173",
+                                "http://100.29.75.19/",
+                                "https://leogon1234.github.io"
+                                )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }
