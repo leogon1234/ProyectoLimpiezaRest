@@ -20,14 +20,14 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor // Esto genera el constructor automáticamente para todas las dependencias 'final'
+@RequiredArgsConstructor
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Autenticación", description = "Registro y autenticación de usuarios")
 public class AuthController {
 
     private final UsuarioService usuarioService;
     private final UsuarioRepository usuarioRepository;
 
-    // --- NUEVAS DEPENDENCIAS PARA SEGURIDAD ---
+    // --- DEPENDENCIAS PARA SEGURIDAD ---
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -57,17 +57,17 @@ public class AuthController {
             )
             @RequestBody Usuario usuario) {
         try {
-            // 1. Encriptamos la contraseña antes de pasarla al servicio
+            // 1. Encriptamos la contraseña
             usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 
-            // 2. Guardamos el usuario
+            // 2. Guardamos el usuario (Cliente por defecto)
             Usuario creado = usuarioService.registrarCliente(usuario);
 
             // 3. Generamos el token JWT
             String jwtToken = jwtService.generateToken(creado);
 
-            // 4. Devolvemos el token
-            return ResponseEntity.ok(new AuthResponse(jwtToken));
+            // 4. Devolvemos token, false (no es admin) y el NOMBRE
+            return ResponseEntity.ok(new AuthResponse(jwtToken, false, creado.getNombre()));
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
@@ -99,21 +99,25 @@ public class AuthController {
                     required = true,
                     content = @Content(schema = @Schema(implementation = LoginRequest.class))
             )
-            @RequestBody LoginRequest request) { // Usamos LoginRequest que es más limpio
+            @RequestBody LoginRequest request) {
 
-        // 1. Autenticación automática de Spring Security (valida pass encriptada)
+        // 1. Autenticación automática de Spring Security
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        // 2. Buscamos al usuario para generar el token
+        // 2. Buscamos al usuario
         Usuario user = usuarioRepository.findByEmail(request.getEmail()).orElseThrow();
 
         // 3. Generamos el token
         String jwtToken = jwtService.generateToken(user);
 
-        // 4. Devolvemos el token
-        return ResponseEntity.ok(new AuthResponse(jwtToken));
+        // 4. Verificamos si es ADMIN
+        boolean isAdmin = user.getRol() != null &&
+                "ADMIN".equalsIgnoreCase(user.getRol().getNombreRol());
+
+        // 5. Devolvemos token, rol y el NOMBRE real de la base de datos
+        return ResponseEntity.ok(new AuthResponse(jwtToken, isAdmin, user.getNombre()));
     }
 
     @Operation(
@@ -129,16 +133,12 @@ public class AuthController {
             )
             @RequestBody Usuario usuario) {
         try {
-            // 1. Encriptar contraseña
             usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-
-            // 2. Guardar
             Usuario creado = usuarioService.registrarAdmin(usuario);
-
-            // 3. Generar Token
             String jwtToken = jwtService.generateToken(creado);
 
-            return ResponseEntity.ok(new AuthResponse(jwtToken));
+            // Devolvemos token, true (es admin) y el NOMBRE
+            return ResponseEntity.ok(new AuthResponse(jwtToken, true, creado.getNombre()));
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(ex.getMessage());
         }
