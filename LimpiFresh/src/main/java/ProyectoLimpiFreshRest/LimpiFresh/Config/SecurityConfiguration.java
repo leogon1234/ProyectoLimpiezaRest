@@ -23,10 +23,19 @@ public class SecurityConfiguration {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // RUTAS PÚBLICAS (Login/Registro)
-                        .anyRequest().authenticated()               // EL RESTO PRIVADAS
+                        .requestMatchers(
+                                "/api/auth/**",        // Login / Registro (público)
+                                "/api/productos/**",   // Productos públicos
+                                "/api/categorias/**",  // Categorías públicas
+                                "/v3/api-docs/**",     // Swagger
+                                "/swagger-ui.html",
+                                "/swagger-ui/**"
+                        ).permitAll()
+                        .anyRequest().authenticated() // El resto requiere JWT
                 )
-                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(sess ->
+                        sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
