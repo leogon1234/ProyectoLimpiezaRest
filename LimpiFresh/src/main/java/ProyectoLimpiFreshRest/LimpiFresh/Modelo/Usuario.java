@@ -49,6 +49,10 @@ public class Usuario {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void setRol(Rol rol) {
         this.rol = rol;
     }

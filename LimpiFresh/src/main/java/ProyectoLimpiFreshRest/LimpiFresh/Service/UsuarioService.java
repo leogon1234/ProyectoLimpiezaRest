@@ -5,6 +5,8 @@ import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Usuario;
 import ProyectoLimpiFreshRest.LimpiFresh.Repository.RolRepository;
 import ProyectoLimpiFreshRest.LimpiFresh.Repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -38,5 +40,18 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Rol ADMIN no existe"));
         usuario.setRol(rolAdmin);
         return usuarioRepository.save(usuario);
+    }
+
+    public List<Usuario> listarUsuarios() {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        usuarios.forEach(u -> u.setPassword(null));
+        return usuarios;
+    }
+
+    public void eliminarPorId(Integer id) {
+        if (!usuarioRepository.existsById(id)) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        usuarioRepository.deleteById(id);
     }
 }

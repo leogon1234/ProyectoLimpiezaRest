@@ -1,17 +1,16 @@
 package ProyectoLimpiFreshRest.LimpiFresh.Controller;
 
+import ProyectoLimpiFreshRest.LimpiFresh.Dto.CrearBoletaRequest;
 import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Boleta;
 import ProyectoLimpiFreshRest.LimpiFresh.Service.BoletaService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -25,51 +24,23 @@ public class BoletaController {
         this.boletaService = service;
     }
 
-    @Operation(
-            summary = "Crear una nueva boleta",
-            description = "Crea una boleta de compra con los datos del cliente, items y totales. " +
-                    "La boleta debe incluir: número de boleta (único), datos del cliente, items con productos, " +
-                    "subtotal, IVA y total. La fecha se asigna automáticamente."
-    )
+    @Operation(summary = "Checkout: crear boleta desde compra", description = "Recibe usuario/datos/envío + items (productoId, cantidad) y crea boleta en BD.")
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Boleta creada exitosamente",
-                    content = @Content(schema = @Schema(implementation = Boleta.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Error de validación: número de boleta duplicado o datos inválidos"
-            )
+            @ApiResponse(responseCode = "200", description = "Boleta creada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
-    @PostMapping
-    public ResponseEntity<Boleta> crear(
-            @RequestBody(
-                    description = "Datos completos de la boleta incluyendo items, cliente y totales",
-                    required = true,
-                    content = @Content(schema = @Schema(implementation = Boleta.class))
-            )
-            @org.springframework.web.bind.annotation.RequestBody Boleta boleta) {
-        Boleta creada = boletaService.guardar(boleta);
-        return ResponseEntity.ok(creada);
+    @PostMapping("/checkout")
+    public ResponseEntity<Boleta> checkout(@RequestBody CrearBoletaRequest req) {
+        return ResponseEntity.ok(boletaService.crearDesdeCompra(req));
     }
 
-    @Operation(
-            summary = "Obtener boleta por ID",
-            description = "Obtiene una boleta específica mediante su ID numérico. " +
-                    "Incluye todos los detalles: cliente, items, totales y fecha."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Boleta encontrada exitosamente",
-                    content = @Content(schema = @Schema(implementation = Boleta.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Boleta no encontrada con el ID proporcionado"
-            )
-    })
+    @Operation(summary = "Listar boletas", description = "Devuelve todas las boletas (para Admin).")
+    @GetMapping
+    public ResponseEntity<List<Boleta>> listar() {
+        return ResponseEntity.ok(boletaService.listarTodas());
+    }
+
+    @Operation(summary = "Obtener boleta por ID", description = "Obtiene una boleta específica por ID.")
     @GetMapping("/{id}")
     public ResponseEntity<Boleta> getPorId(
             @Parameter(description = "ID numérico de la boleta", required = true, example = "1")
@@ -79,25 +50,10 @@ public class BoletaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(
-            summary = "Obtener boleta por número",
-            description = "Busca una boleta mediante su número único (ej: 'INV-1234567890'). " +
-                    "Útil para que los clientes busquen sus boletas por el número de factura."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Boleta encontrada exitosamente",
-                    content = @Content(schema = @Schema(implementation = Boleta.class))
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Boleta no encontrada con el número proporcionado"
-            )
-    })
+    @Operation(summary = "Obtener boleta por número", description = "Busca boleta por numeroBoleta (INV-...).")
     @GetMapping("/numero/{numero}")
     public ResponseEntity<Boleta> getPorNumero(
-            @Parameter(description = "Número único de la boleta (ej: 'INV-1234567890')", required = true, example = "INV-1234567890")
+            @Parameter(description = "Número único de la boleta", required = true, example = "INV-1234567890")
             @PathVariable String numero) {
         Optional<Boleta> boleta = boletaService.buscarPorNumero(numero);
         return boleta.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
