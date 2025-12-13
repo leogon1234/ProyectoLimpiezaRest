@@ -5,14 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.persistence.*;
 import io.swagger.v3.oas.annotations.media.Schema;
-
-// --- NUEVOS IMPORTS DE SEGURIDAD ---
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
-// ------------------------------------
 
 @Table(name = "usuario")
 @Data
@@ -20,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Schema(description = "Modelo de usuario del sistema")
-public class Usuario implements UserDetails { // <--- CAMBIO 1: Implementar interfaz
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,9 +69,8 @@ public class Usuario implements UserDetails { // <--- CAMBIO 1: Implementar inte
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (rol == null) return List.of();
-        // IMPORTANTE: Aquí asumo que tu clase 'Rol' tiene un método 'getNombre()'.
-        // Si tu clase Rol usa otro nombre (ej: getDescripcion), cámbialo aquí.
-        return List.of(new SimpleGrantedAuthority(rol.getNombreRol()));
+        return List.of(
+                new SimpleGrantedAuthority("ROLE_" + rol.getNombreRol()));
     }
 
     @Override

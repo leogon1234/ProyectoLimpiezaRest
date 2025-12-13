@@ -20,28 +20,4 @@ public class UsuarioController {
     public UsuarioController(UsuarioService usuarioService) {
         this.usuarioService = usuarioService;
     }
-
-    @Operation(summary = "Listar usuarios", description = "Devuelve todos los usuarios registrados (sin password).")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Lista de usuarios")
-    })
-    @GetMapping
-    public ResponseEntity<List<Usuario>> listar() {
-        return ResponseEntity.ok(usuarioService.listarUsuarios());
-    }
-
-    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario por ID.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Usuario eliminado"),
-            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
-        try {
-            usuarioService.eliminarPorId(id);
-            return ResponseEntity.ok("Usuario eliminado");
-        } catch (RuntimeException ex) {
-            return ResponseEntity.status(404).body(ex.getMessage());
-        }
-    }
 }

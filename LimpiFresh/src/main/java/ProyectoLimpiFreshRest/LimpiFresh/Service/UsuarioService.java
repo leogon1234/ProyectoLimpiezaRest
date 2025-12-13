@@ -9,27 +9,34 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+// UsuarioService.java
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Service
 public class UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository) {
+    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public Usuario registrarCliente(Usuario usuario) {
         if (usuarioRepository.existsByEmail(usuario.getEmail())) {
             throw new RuntimeException("El correo ya está registrado");
         }
-        Rol rolCliente = rolRepository.findByNombreRol("CLIENTE").orElseThrow(() -> new RuntimeException("Rol CLIENTE no existe"));
-        usuario.setRol(rolCliente);
-        return usuarioRepository.save(usuario);
-    }
+        Rol rolCliente = rolRepository.findByNombreRol("CLIENTE")
+                .orElseThrow(() -> new RuntimeException("Rol CLIENTE no existe"));
 
-    public Optional<Usuario> buscarPorEmail(String email) {
-        return usuarioRepository.findByEmail(email);
+        usuario.setRol(rolCliente);
+
+        // ✅ ENCRIPTAR
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+
+        return usuarioRepository.save(usuario);
     }
 
     public Usuario registrarAdmin(Usuario usuario) {
@@ -38,20 +45,12 @@ public class UsuarioService {
         }
         Rol rolAdmin = rolRepository.findByNombreRol("ADMIN")
                 .orElseThrow(() -> new RuntimeException("Rol ADMIN no existe"));
+
         usuario.setRol(rolAdmin);
+
+        // ✅ ENCRIPTAR
+        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+
         return usuarioRepository.save(usuario);
-    }
-
-    public List<Usuario> listarUsuarios() {
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        usuarios.forEach(u -> u.setPassword(null));
-        return usuarios;
-    }
-
-    public void eliminarPorId(Integer id) {
-        if (!usuarioRepository.existsById(id)) {
-            throw new RuntimeException("Usuario no encontrado");
-        }
-        usuarioRepository.deleteById(id);
     }
 }

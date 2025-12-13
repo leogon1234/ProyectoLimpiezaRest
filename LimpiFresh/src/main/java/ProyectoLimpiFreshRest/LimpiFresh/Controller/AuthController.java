@@ -1,31 +1,57 @@
 package ProyectoLimpiFreshRest.LimpiFresh.Controller;
 
-import ProyectoLimpiFreshRest.LimpiFresh.Modelo.AuthResponse;
-import ProyectoLimpiFreshRest.LimpiFresh.Modelo.LoginRequest;
+import ProyectoLimpiFreshRest.LimpiFresh.Dto.LoginRequest;
+import ProyectoLimpiFreshRest.LimpiFresh.Dto.LoginResponse;
 import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Usuario;
-import ProyectoLimpiFreshRest.LimpiFresh.Service.AuthService;
-import io.swagger.v3.oas.annotations.Operation;
-import lombok.RequiredArgsConstructor;
+import ProyectoLimpiFreshRest.LimpiFresh.Repository.UsuarioRepository;
+import ProyectoLimpiFreshRest.LimpiFresh.Security.JwtService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Map;
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
-@io.swagger.v3.oas.annotations.tags.Tag(name = "Autenticación", description = "Acceso seguro con JWT")
+@io.swagger.v3.oas.annotations.tags.Tag(name = "Autenticación", description = "Registro y autenticación de usuarios")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthenticationManager authenticationManager;
+    private final UsuarioRepository usuarioRepository;
+    private final JwtService jwtService;
 
-    @Operation(summary = "Registrar nuevo usuario")
-    @PostMapping("/registro")
-    public ResponseEntity<AuthResponse> registrar(@RequestBody Usuario usuario) {
-        return ResponseEntity.ok(authService.registrar(usuario));
+    public AuthController(AuthenticationManager authenticationManager,
+                          UsuarioRepository usuarioRepository,
+                          JwtService jwtService) {
+        this.authenticationManager = authenticationManager;
+        this.usuarioRepository = usuarioRepository;
+        this.jwtService = jwtService;
     }
 
-    @Operation(summary = "Iniciar sesión")
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(req.getEmail(), req.getPassword())
+            );
+
+            Usuario u = usuarioRepository.findByEmail(req.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            boolean isAdmin = u.getRol() != null && "ADMIN".equalsIgnoreCase(u.getRol().getNombreRol());
+
+            String token = jwtService.generateToken(
+                    u,
+                    Map.of(
+                            "role", (u.getRol() != null ? u.getRol().getNombreRol() : "CLIENTE"),
+                            "admin", isAdmin,
+                            "userId", u.getId()
+                    )
+            );
+
+            return ResponseEntity.ok(new LoginResponse(token, isAdmin, u.getId(), u.getEmail()));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
     }
 }
