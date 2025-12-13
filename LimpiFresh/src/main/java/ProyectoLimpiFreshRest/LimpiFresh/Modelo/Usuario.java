@@ -59,6 +59,10 @@ public class Usuario implements UserDetails { // <--- CAMBIO 1: Implementar inte
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public void setRol(Rol rol) {
         this.rol = rol;
     }

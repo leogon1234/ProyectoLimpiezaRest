@@ -1,5 +1,6 @@
 package ProyectoLimpiFreshRest.LimpiFresh.Modelo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,6 +15,7 @@ public class BoletaItem {
     private Integer  id;
     @ManyToOne
     @JoinColumn(name = "boleta_id")
+    @JsonIgnore
     private Boleta boleta;
     @ManyToOne
     @JoinColumn(name = "producto_id")
