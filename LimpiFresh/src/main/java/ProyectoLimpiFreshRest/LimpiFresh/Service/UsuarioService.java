@@ -4,13 +4,11 @@ import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Rol;
 import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Usuario;
 import ProyectoLimpiFreshRest.LimpiFresh.Repository.RolRepository;
 import ProyectoLimpiFreshRest.LimpiFresh.Repository.UsuarioRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
-// UsuarioService.java
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Service
 public class UsuarioService {
@@ -18,7 +16,11 @@ public class UsuarioService {
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, RolRepository rolRepository, PasswordEncoder passwordEncoder) {
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            RolRepository rolRepository,
+            PasswordEncoder passwordEncoder
+    ) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
@@ -32,10 +34,7 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Rol CLIENTE no existe"));
 
         usuario.setRol(rolCliente);
-
-        // ✅ ENCRIPTAR
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-
         return usuarioRepository.save(usuario);
     }
 
@@ -47,10 +46,36 @@ public class UsuarioService {
                 .orElseThrow(() -> new RuntimeException("Rol ADMIN no existe"));
 
         usuario.setRol(rolAdmin);
-
-        // ✅ ENCRIPTAR
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
-
         return usuarioRepository.save(usuario);
+    }
+    public List<Usuario> listarTodos() {
+        return usuarioRepository.findAll();
+    }
+
+    public Optional<Usuario> obtenerPorId(Integer id) {
+        return usuarioRepository.findById(id);
+    }
+
+    public boolean eliminarPorId(Integer id) {
+        if (!usuarioRepository.existsById(id)) {
+            return false;
+        }
+        usuarioRepository.deleteById(id);
+        return true;
+    }
+
+    public Optional<Usuario> cambiarRol(Integer usuarioId, Integer rolId) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findById(usuarioId);
+        Optional<Rol> rolOpt = rolRepository.findById(rolId);
+
+        if (usuarioOpt.isEmpty() || rolOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Usuario usuario = usuarioOpt.get();
+        usuario.setRol(rolOpt.get());
+
+        return Optional.of(usuarioRepository.save(usuario));
     }
 }

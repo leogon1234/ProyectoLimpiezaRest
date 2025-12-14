@@ -1,7 +1,7 @@
 package ProyectoLimpiFreshRest.LimpiFresh.Controller;
 
 import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Usuario;
-import ProyectoLimpiFreshRest.LimpiFresh.Service.UsuarioService;
+import ProyectoLimpiFreshRest.LimpiFresh.Repository.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,12 +12,40 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
-@io.swagger.v3.oas.annotations.tags.Tag(name = "Usuarios", description = "Administración de usuarios (Admin)")
+@io.swagger.v3.oas.annotations.tags.Tag(
+        name = "Usuarios",
+        description = "Administración de usuarios (solo ADMIN)"
+)
 public class UsuarioController {
 
-    private final UsuarioService usuarioService;
+    private final UsuarioRepository usuarioRepository;
 
-    public UsuarioController(UsuarioService usuarioService) {
-        this.usuarioService = usuarioService;
+    public UsuarioController(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    @Operation(summary = "Listar usuarios", description = "Devuelve todos los usuarios registrados (ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuarios obtenidos correctamente"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
+    @GetMapping
+    public ResponseEntity<List<Usuario>> listarUsuarios() {
+        return ResponseEntity.ok(usuarioRepository.findAll());
+    }
+
+    @Operation(summary = "Eliminar usuario", description = "Elimina un usuario por ID (ADMIN)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Usuario eliminado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+            @ApiResponse(responseCode = "403", description = "Acceso denegado")
+    })
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminarUsuario(@PathVariable Integer id) {
+        if (!usuarioRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        usuarioRepository.deleteById(id);
+        return ResponseEntity.ok().build();
     }
 }
