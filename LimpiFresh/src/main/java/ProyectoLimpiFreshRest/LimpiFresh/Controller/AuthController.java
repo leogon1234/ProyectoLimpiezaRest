@@ -5,6 +5,7 @@ import ProyectoLimpiFreshRest.LimpiFresh.Dto.LoginResponse;
 import ProyectoLimpiFreshRest.LimpiFresh.Modelo.Usuario;
 import ProyectoLimpiFreshRest.LimpiFresh.Repository.UsuarioRepository;
 import ProyectoLimpiFreshRest.LimpiFresh.Security.JwtService;
+import ProyectoLimpiFreshRest.LimpiFresh.Service.UsuarioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -18,13 +19,16 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UsuarioRepository usuarioRepository;
     private final JwtService jwtService;
+    private final UsuarioService usuarioService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           UsuarioRepository usuarioRepository,
-                          JwtService jwtService) {
+                          JwtService jwtService,
+                          UsuarioService usuarioService) {
         this.authenticationManager = authenticationManager;
         this.usuarioRepository = usuarioRepository;
         this.jwtService = jwtService;
+        this.usuarioService = usuarioService;
     }
 
     @PostMapping("/login")
@@ -52,6 +56,16 @@ public class AuthController {
 
         } catch (Exception e) {
             return ResponseEntity.status(401).body("Credenciales inválidas");
+        }
+    }
+
+    @PostMapping("/registro")
+    public ResponseEntity<?> registro(@RequestBody Usuario usuario) {
+        try {
+            Usuario creado = usuarioService.registrarCliente(usuario);
+            return ResponseEntity.ok(creado);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
