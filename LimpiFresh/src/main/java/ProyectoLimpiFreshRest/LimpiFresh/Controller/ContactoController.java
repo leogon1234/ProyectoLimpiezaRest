@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 @SecurityRequirement(name = "bearerAuth")
-@CrossOrigin(origins = "http://limpifresh-pagina.s3-website-us-east-1.amazonaws.com")
+@CrossOrigin(origins = "http://pagina-limpifresh.s3-website-us-east-1.amazonaws.com")
 @RestController
 @RequestMapping("/api/contacto")
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Contacto", description = "Gestión de mensajes de contacto")

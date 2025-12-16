@@ -17,7 +17,7 @@ public class config {
                         .allowedOrigins(
                                 "http://localhost:5173",
                                 "https://leogon1234.github.io",
-                                "http://limpifresh-pagina.s3-website-us-east-1.amazonaws.com"
+                                "http://pagina-limpifresh.s3-website-us-east-1.amazonaws.com"
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
