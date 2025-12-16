@@ -36,10 +36,16 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/blogs/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contacto").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/boletas/checkout").authenticated()
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
                         .requestMatchers("/api/boletas/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/contacto/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/contacto/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/v3/api-docs/swagger-config"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

@@ -11,6 +11,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+
+@CrossOrigin(origins = "http://limpifresh-pagina.s3-website-us-east-1.amazonaws.com")
 @RestController
 @RequestMapping("/api/auth")
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Autenticación", description = "Registro y autenticación de usuarios")

@@ -9,15 +9,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class config {
 
     @Bean
-    public WebMvcConfigurer configurer(){
+    public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry){
+            public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
                                 "http://localhost:5173",
-                                "https://leogon1234.github.io"
-                                )
+                                "https://leogon1234.github.io",
+                                "http://limpifresh-pagina.s3-website-us-east-1.amazonaws.com"
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*");
             }

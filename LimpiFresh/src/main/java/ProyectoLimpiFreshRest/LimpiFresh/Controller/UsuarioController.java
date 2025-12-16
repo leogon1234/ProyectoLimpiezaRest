@@ -5,17 +5,19 @@ import ProyectoLimpiFreshRest.LimpiFresh.Repository.UsuarioRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@CrossOrigin(origins = "http://limpifresh-pagina.s3-website-us-east-1.amazonaws.com")
 @RestController
 @RequestMapping("/api/usuarios")
 @io.swagger.v3.oas.annotations.tags.Tag(
         name = "Usuarios",
         description = "Administración de usuarios (solo ADMIN)"
 )
+@SecurityRequirement(name = "bearerAuth")
 public class UsuarioController {
 
     private final UsuarioRepository usuarioRepository;
